@@ -13,6 +13,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
+//            OffsetScrollView()
             SwiftUIPagerView(index: $index, pages: (0..<30).map { Page(page: $0) })
                 .background(Color.blue)
             MenuView(index: $index, pages: 30)
@@ -33,33 +34,32 @@ struct OffsetScrollView: View {
     @State private var offset: CGFloat = 0
     
     var body: some View {
-        GeometryReader { (geometry: GeometryProxy) in
-            VStack {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(alignment: .center, spacing: 0) {
-                        GeometryReader { (geometry2: GeometryProxy) -> Text in
-                            let newOffset = geometry2.frame(in: .global).minX
-                            if self.offset != newOffset {
-                                self.offset = newOffset
-                            }
-                            return Text("")
+        VStack {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .center, spacing: 0) {
+                    GeometryReader { (geometry2: GeometryProxy) -> Text in
+                        let newOffset = geometry2.frame(in: .global).minX
+                        if self.offset != newOffset {
+                            self.offset = newOffset
                         }
-                        ForEach(0..<100) { page in
-                            Text("\(page)")
-                                .frame(width: 50)
-                        }
+                        return Text("")
+                    }
+                    ForEach(0..<100) { page in
+                        Text("\(page)")
+                            .frame(width: 50)
                     }
                 }
-                
-                Text("\(self.offset)")
-                    .frame(height: 50)
             }
+            
+            Text("\(self.offset)")
+                .frame(height: 50)
         }
     }
 }
 
 struct MenuView: View {
     @Binding var index: Int
+    @State private var offset: CGFloat = 0
     let pages: Int
     @State var offsets: [Int: CGFloat] = [:]
     private var currentOffset: CGFloat { offsets[index] ?? 0.0 }
@@ -74,6 +74,10 @@ struct MenuView: View {
     var scrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .center, spacing: 16) {
+                GeometryReader { (geometry2: GeometryProxy) -> AnyView in
+                    self.offset = geometry2.frame(in: .global).minX
+                    return AnyView(EmptyView())
+                }
                 ForEach(0..<pages) { page in
                     GeometryReader { geometry in
                         Text("\(page)")
@@ -86,7 +90,8 @@ struct MenuView: View {
                                 print("### global", geometry.frame(in: .global).minX)
                         }
                     }
-                }.offset(x: isVisibleIndex ? 0 : -currentOffset)
+                }
+//                .offset(x: offset)//isVisibleIndex ? 0 : -currentOffset)
             }
         }
         .onAppear { self.offsets = [:] }
@@ -94,6 +99,7 @@ struct MenuView: View {
         .onTapGesture {
             print("### isVisibleIndex", self.isVisibleIndex)
             print("### currentOffset", self.currentOffset)
+            print("### offset", self.offset)
         }
     }
 }
