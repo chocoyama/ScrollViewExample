@@ -58,12 +58,10 @@ struct OffsetScrollView: View {
     }
 }
 
-var offsets: [Int: CGFloat] = [:]
-
 struct MenuView: View {
     @Binding var index: Int
     let pages: Int
-    @State private var offset: CGFloat = 0
+    @State var offsets: [Int: CGFloat] = [:]
     private var currentOffset: CGFloat { offsets[index] ?? 0.0 }
     private var isVisibleIndex: Bool { currentOffset < UIScreen.main.bounds.width }
     
@@ -84,15 +82,15 @@ struct MenuView: View {
                             .frame(width: geometry.size.width)
                             .onTapGesture { self.index = page }
                             .onAppear {
-                                offsets[page] = geometry.frame(in: .global).minX
+                                self.offsets[page] = geometry.frame(in: .global).minX
                                 print("### global", geometry.frame(in: .global).minX)
                         }
                     }
                 }.offset(x: isVisibleIndex ? 0 : -currentOffset)
             }
         }
-        .onAppear { offsets = [:] }
-        .onDisappear { offsets = [:] }
+        .onAppear { self.offsets = [:] }
+        .onDisappear { self.offsets = [:] }
         .onTapGesture {
             print("### isVisibleIndex", self.isVisibleIndex)
             print("### currentOffset", self.currentOffset)
